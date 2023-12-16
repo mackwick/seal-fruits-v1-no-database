@@ -1,5 +1,7 @@
 // import express
 const express = require("express")
+const morgan = require("morgan")
+const methodOverride = require("method-override")
 
 // import our fruits
 // require will return the value of module.exports
@@ -17,6 +19,11 @@ app.use(express.static("public")) // use a "public" folder for files
 //adds the data to req.body
 app.use(express.urlencoded({extended: true}))
 
+//morgan - log data about each request for debugging
+app.use(morgan("dev"))
+//methodOverride - allows us to override form post requests as a different method (like put or delete)
+//it will look for a _method url query
+app.use(methodOverride("_method"))
 
 //ROUTES
 
@@ -52,11 +59,52 @@ app.post("/fruits", (req, res) => {
     if (body.readyToEat === "on") {
         body.readyToEat = true
     } else {body.readyToEat = false}
-
     //add fruit to the array
     fruits.push(body)
-
     //redirect them to the index page
+    res.redirect("/fruits")
+})
+
+// DESTROY ROUTE - deletes a fruite
+// DELETE request -> /fruits/:id
+// Deletes the specified fruit and redirects to index
+app.delete("/fruits/:id", (req, res) => {
+    // get the id from params
+    const id = req.params.id
+    // then splice it from the array
+    // arr.splice(index, num of items to cut)
+    fruits.splice(id, 1)
+    //redirect to index
+    res.redirect("/fruits")
+})
+
+// edit route - render a form to edit a specific fruit
+// GET request to /fruits/:id/edit
+// render a form with the existing values filled in
+app.get("/fruits/:id/edit", (req, res) => {
+    // grab id
+    const id = req.params.id
+    // get fruit
+    const fruit = fruits[id]
+    // send id and fruit to the template
+    // edit.ejs -> ./views/edit.ejs
+    res.render("edit.ejs", {fruit, id})
+})
+
+// update route - receives form data and updates the fruit
+// PUT request to /fruit/:id
+// Update the specified fruit and redirect to index
+app.put("/fruits/:id", (req, res) => {
+    // get the id
+    const id = req.params.id
+    const body = req.body
+    // conver readyToEat to true or false
+    if (body.readyToEat === "on") {
+        body.readyToEat = true
+    } else {body.readyToEat = false}
+    // update the fruit
+    fruits[id] = body
+    //redirect to index 
     res.redirect("/fruits")
 })
 
@@ -75,7 +123,7 @@ app.get("/fruits/:id", (req, res) => {
     // res.render(template, data)
     // for the template assume "/views/"
     // "show.ejs" =>  ./views/show.ejs
-    res.render("show.ejs", {fruit})
+    res.render("show.ejs", {fruit, id})
     // {fruit} is the same as {fruit:fruit}
 })
 
