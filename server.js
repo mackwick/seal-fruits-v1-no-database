@@ -13,6 +13,13 @@ app.use(express.static("public")) // use a "public" folder for files
 // public/style.css -> /style.css
 // public/app.js -> /app.js
 
+//express.urlencoded (parse url encoded bodies)
+//adds the data to req.body
+app.use(express.urlencoded({extended: true}))
+
+
+//ROUTES
+
 // fruits index route
 // get request to /fruits
 // return all fruits
@@ -21,6 +28,36 @@ app.get("/fruits", (req, res) => {
     // "index.ejs" => "./views/index.ejs"
     // {fruits} => {fruits:fruits}
     res.render("index.ejs", {fruits})
+})
+
+
+// New Route - Render a page with a form to create a new fruit
+// get request to /fruits/new
+// allow us to have a form to create a new fruit
+app.get("/fruits/new", (req, res) => {
+    // render a template with our form
+    // new.ejs = ./views/new.ejs
+    res.render("new.ejs")
+})
+
+// Create Route - Receives Form Data, Creates New Fruit
+// post request to /fruits
+// create a fruit from the form data and redirect back to index
+app.post("/fruits", (req, res) => {
+    //get the form data from the request
+    const body = req.body
+    // send back the form data as JSON
+    // res.send(body)
+    // convert readToEat to true/false
+    if (body.readyToEat === "on") {
+        body.readyToEat = true
+    } else {body.readyToEat = false}
+
+    //add fruit to the array
+    fruits.push(body)
+
+    //redirect them to the index page
+    res.redirect("/fruits")
 })
 
 // fruits show route
